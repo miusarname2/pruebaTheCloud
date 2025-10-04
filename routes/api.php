@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\api\AuthController;
+use App\Http\Controllers\api\KeywordController;
 use App\Http\Controllers\api\TaskController;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -10,10 +11,14 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::post('test', function() {
+Route::post('test', function () {
     return response()->json(['message' => 'API is working']);
 });
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
 Route::resource('tasks', TaskController::class)->middleware('auth:sanctum');
 Route::patch('tasks/{task}/toggle', [TaskController::class, 'toggle'])->middleware('auth:sanctum');
+Route::resource('keywords', KeywordController::class)->middleware('auth:sanctum');
+Route::post('tasks/{task}/keywords', [KeywordController::class, 'attachToTask'])->middleware('auth:sanctum');
+Route::delete('tasks/{task}/keywords/{keyword}', [KeywordController::class, 'detachFromTask'])->middleware('auth:sanctum');
+Route::patch('tasks/{task}/keywords', [KeywordController::class, 'syncForTask'])->middleware('auth:sanctum');
