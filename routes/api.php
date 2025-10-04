@@ -15,5 +15,5 @@ Route::post('test', function() {
 });
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
-Route::resource('tasks', TaskController::class);
+Route::resource('tasks', TaskController::class)->middleware('auth:sanctum');
 Route::patch('tasks/{task}/toggle', [TaskController::class, 'toggle'])->middleware('auth:sanctum');
