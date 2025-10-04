@@ -32,14 +32,15 @@ class AuthenticatedSessionController extends Controller
     {
         $user = $request->validateCredentials();
 
-        if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
-            $request->session()->put([
-                'login.id' => $user->getKey(),
-                'login.remember' => $request->boolean('remember'),
-            ]);
+        // Skip two-factor authentication for task management app
+        // if (Features::enabled(Features::twoFactorAuthentication()) && $user->hasEnabledTwoFactorAuthentication()) {
+        //     $request->session()->put([
+        //         'login.id' => $user->getKey(),
+        //         'login.remember' => $request->boolean('remember'),
+        //     ]);
 
-            return to_route('two-factor.login');
-        }
+        //     return to_route('two-factor.login');
+        // }
 
         Auth::login($user, $request->boolean('remember'));
 

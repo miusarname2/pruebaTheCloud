@@ -11,11 +11,55 @@ import { register } from '@/routes';
 import { request } from '@/routes/password';
 import { Form, Head } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { useAuth } from '@/composables/useAuth';
+import { ref } from 'vue';
+
+const { login: apiLogin } = useAuth();
+const apiLoginError = ref<string>('');
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
+
+const handleSubmit = async (data: any, { setErrors }: any) => {
+    try {
+        // First, call API login to get token
+        await apiLogin(data.email, data.password);
+        apiLoginError.value = '';
+
+        // Then, proceed with Inertia login for web session
+        return true; // Let Inertia handle the form submission
+    } catch (error: any) {
+        apiLoginError.value = error.response?.data?.message || 'Login failed';
+        setErrors({ email: apiLoginError.value });
+        return false; // Prevent Inertia submission
+    }
+};
+
+const onSubmit = async () => {
+    // This will be called on form submit, but since we're using Inertia Form,
+    // perhaps better to modify the AuthenticatedSessionController or find another way.
+
+    // Actually, since the form is bound to AuthenticatedSessionController.store.form(),
+    // the submit is handled by Inertia. To intercept, I need to override the submit.
+
+    // Perhaps it's easier to call API login after successful Inertia login.
+    // But since Inertia redirects on success, I can call it in a watcher or something.
+
+    // For now, let's try to call API login on submit, and if successful, then submit the form.
+
+    const form = document.querySelector('form') as HTMLFormElement;
+    const formData = new FormData(form);
+    const email = formData.get('email') as string;
+    const password = formData.get('password') as string;
+
+    try {
+        await apiLogin(email, password);
+    } catch (error: any) {
+        apiLoginError.value = error.response?.data?.message || 'Login failed';
+    }
+};
 </script>
 
 <template>
@@ -35,6 +79,7 @@ defineProps<{
         <Form
             v-bind="AuthenticatedSessionController.store.form()"
             :reset-on-success="['password']"
+            @submit.prevent="onSubmit"
             v-slot="{ errors, processing }"
             class="flex flex-col gap-6"
         >
@@ -51,7 +96,7 @@ defineProps<{
                         autocomplete="email"
                         placeholder="email@example.com"
                     />
-                    <InputError :message="errors.email" />
+                    <InputError :message="errors.email || apiLoginError" />
                 </div>
 
                 <div class="grid gap-2">
