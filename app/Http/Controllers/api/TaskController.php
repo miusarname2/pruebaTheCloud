@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class TaskController extends Controller
 {
@@ -65,7 +66,7 @@ class TaskController extends Controller
             $task->load('creator', 'assignees', 'keywords');
 
             return response()->json(['data' => $task], 201);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             return response()->json([
                 'message' => 'Error al crear la tarea',
@@ -126,7 +127,7 @@ class TaskController extends Controller
             $task->load('creator', 'assignees', 'keywords');
 
             return response()->json(['data' => $task], 200);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             DB::rollBack();
             return response()->json([
                 'message' => 'Error al actualizar la tarea',
@@ -143,5 +144,32 @@ class TaskController extends Controller
         $taskToDelete = Task::findOrFail($id);
         $taskToDelete->delete();
         return response()->json(['message' => 'Task deleted successfully.'], 200);
+    }
+
+    public function toggle(string|int $id)
+    {
+        $task = Task::with(['assignees', 'creator', 'keywords'])->findOrFail($id);
+
+        DB::beginTransaction();
+        try {
+            $task->is_done = ! (bool) $task->is_done;
+            $task->save();
+
+            DB::commit();
+
+            // Recargar relaciones por si se necesitan en la respuesta
+            $task->load(['creator', 'assignees', 'keywords']);
+
+            return response()->json([
+                'message' => 'Task toggled successfully',
+                'data' => $task
+            ], 200);
+        } catch (Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error toggling task',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
