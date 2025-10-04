@@ -99,11 +99,11 @@ export function useKeywords() {
         }
     };
 
-    const syncKeywordsForTask = async (taskId: number, keywordIds: number[]) => {
+    const syncKeywordsForTask = async (taskId: number, keywordNames: string[]) => {
         loading.value = true;
         error.value = '';
         try {
-            await api.patch(`/tasks/${taskId}/keywords`, { keyword_ids: keywordIds });
+            await api.patch(`/tasks/${taskId}/keywords`, { names: keywordNames });
         } catch (err: any) {
             error.value = err.response?.data?.message || 'Failed to sync keywords';
             throw err;

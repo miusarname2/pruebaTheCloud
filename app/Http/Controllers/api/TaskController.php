@@ -15,7 +15,7 @@ class TaskController extends Controller
      */
     public function index()
     {
-        $tasks = Task::all();
+        $tasks = Task::with(['creator', 'keywords'])->get();
         return response()->json($tasks);
     }
 
@@ -80,7 +80,7 @@ class TaskController extends Controller
      */
     public function show(string $id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::with(['creator', 'keywords'])->findOrFail($id);
         return response()->json($task);
     }
 

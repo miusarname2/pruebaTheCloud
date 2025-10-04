@@ -72,13 +72,10 @@ const saveEditing = async () => {
 
         // Handle keywords
         const keywordNames = editingKeywords.value.split(',').map(s => s.trim()).filter(s => s);
-        const keywordIds = keywordNames.map(name => {
-            const existing = keywords.value.find(k => k.name === name);
-            return existing ? existing.id : null;
-        }).filter(id => id !== null) as number[];
 
-        if (keywordIds.length > 0) {
-            await syncKeywordsForTask(editingTaskId.value, keywordIds);
+        if (keywordNames.length > 0) {
+            await syncKeywordsForTask(editingTaskId.value, keywordNames);
+            await fetchKeywords(); // Refresh global keywords list
         }
 
         cancelEditing();
