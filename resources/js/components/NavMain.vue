@@ -18,11 +18,12 @@ const page = usePage();
 </script>
 
 <template>
-    <SidebarGroup class="px-2 py-0">
-        <SidebarGroupLabel>Platform</SidebarGroupLabel>
+    <SidebarGroup class="px-2 py-0 bg-gradient-to-r from-background to-muted/10">
+        <SidebarGroupLabel class="text-primary font-medium">Platform</SidebarGroupLabel>
         <SidebarMenu>
             <SidebarMenuItem v-for="item in items" :key="item.title">
                 <SidebarMenuButton
+                    class="transition-all duration-200 hover:bg-primary/10 hover:scale-105"
                     as-child
                     :is-active="urlIsActive(item.href, page.url)"
                     :tooltip="item.title"
