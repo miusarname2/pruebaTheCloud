@@ -10,6 +10,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
+import Switch from '@/components/ui/switch/Switch.vue';
+import KeywordsSelector from '@/components/KeywordsSelector.vue';
 import { Plus, Edit, Trash2, CheckCircle, Circle } from 'lucide-vue-next';
 
 const { tasks, loading, error, fetchTasks, createTask, updateTask, deleteTask, toggleTask } = useTasks();
@@ -20,7 +22,7 @@ const newTaskDescription = ref('');
 const editingTaskId = ref<number | null>(null);
 const editingTitle = ref('');
 const editingDescription = ref('');
-const editingKeywords = ref<string>('');
+const editingKeywords = ref<string[]>([]);
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -52,14 +54,14 @@ const startEditing = (task: any) => {
     editingTaskId.value = task.id;
     editingTitle.value = task.title;
     editingDescription.value = task.description || '';
-    editingKeywords.value = task.keywords?.map((k: any) => k.name).join(', ') || '';
+    editingKeywords.value = task.keywords?.map((k: any) => k.name) || [];
 };
 
 const cancelEditing = () => {
     editingTaskId.value = null;
     editingTitle.value = '';
     editingDescription.value = '';
-    editingKeywords.value = '';
+    editingKeywords.value = [];
 };
 
 const saveEditing = async () => {
@@ -71,7 +73,7 @@ const saveEditing = async () => {
         });
 
         // Handle keywords
-        const keywordNames = editingKeywords.value.split(',').map(s => s.trim()).filter(s => s);
+        const keywordNames = editingKeywords.value;
 
         if (keywordNames.length > 0) {
             await syncKeywordsForTask(editingTaskId.value, keywordNames);
@@ -208,14 +210,7 @@ const handleToggleTask = async (id: number) => {
                                         class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                                     />
                                 </div>
-                                <div class="space-y-2">
-                                    <Label class="text-sm font-medium">Keywords (comma separated)</Label>
-                                    <Input
-                                        v-model="editingKeywords"
-                                        placeholder="keyword1, keyword2"
-                                        class="transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                                    />
-                                </div>
+                                <KeywordsSelector v-model="editingKeywords" />
                                 <div class="flex gap-2 pt-2">
                                     <Button @click="saveEditing" size="sm" class="transition-all duration-200 hover:scale-105">
                                         <CheckCircle class="w-4 h-4 mr-1" />
@@ -229,19 +224,11 @@ const handleToggleTask = async (id: number) => {
                             <div v-else class="space-y-4">
                                 <div class="flex items-start justify-between">
                                     <div class="flex items-center gap-3 flex-1 min-w-0">
-                                        <button
-                                            @click="handleToggleTask(task.id)"
-                                            class="transition-all duration-200 hover:scale-110"
-                                        >
-                                            <CheckCircle
-                                                v-if="task.is_done"
-                                                class="w-6 h-6 text-green-600 dark:text-green-400"
-                                            />
-                                            <Circle
-                                                v-else
-                                                class="w-6 h-6 text-muted-foreground hover:text-primary"
-                                            />
-                                        </button>
+                                        <Switch
+                                            :checked="task.is_done"
+                                            @update:checked="handleToggleTask(task.id)"
+                                            class="transition-all duration-200"
+                                        />
                                         <h3
                                             class="text-lg font-semibold truncate transition-all duration-200"
                                             :class="{ 'line-through text-muted-foreground': task.is_done }"
